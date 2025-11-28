@@ -5,7 +5,7 @@ import useAuthStore from "../store/authStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const loginStore = useAuthStore((s) => s.login);
+  const login = useAuthStore((s) => s.login); // Updated to match store function name
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,42 +24,26 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Backend login API call
-      const res = await axios.post(
-        import.meta.env.VITE_API_URL
-          ? `${import.meta.env.VITE_API_URL}/api/auth/login`
-          : "/api/auth/login",
-        { email, password },
-        { timeout: 10000 }
-      );
+      // 1. REAL BACKEND CALL
+      const res = await axios.post("http://localhost:8080/api/auth/login", { 
+        email, 
+        password 
+      });
 
-      let userData = res?.data?.user ?? { email };
+      // 2. Get Token AND User from Backend Response
+      // We no longer need to derive anything!
+      const { token, user } = res.data; 
 
-      // Always ensure username exists (backend may not return it)
-      const usernameFromEmail = userData.email.split("@")[0];
-
-      const finalUser = {
-        email: userData.email,
-        username: userData.username || usernameFromEmail,
-      };
-
-      loginStore(finalUser);
+      // 3. Update Store & LocalStorage
+      // Pass the REAL user object from the database
+      login(user, token);
+      
+      console.log("Login Success!", user);
       navigate("/home");
+
     } catch (err) {
-      console.warn("Login API error:", err);
-      console.info("Falling back to demo login (no backend).");
-
-      // Demo fallback user
-      const demoUser = {
-        email,
-        username: email.split("@")[0],
-      };
-
-      loginStore(demoUser);
-      navigate("/home");
-
-      // If you prefer strict backend-only auth:
-      // setError("Login failed. Please try again.");
+      console.error("Login Failed:", err.response?.data || err.message);
+      setError(err.response?.data?.msg || "Login failed. Check backend connection.");
     } finally {
       setLoading(false);
     }
@@ -69,40 +53,33 @@ export default function LoginPage() {
     <div className="h-[calc(100vh-64px)] flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8 max-h-screen overflow-auto">
         <h2 className="text-2xl font-semibold mb-2">Welcome back</h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Login to continue to your personalized learning dashboard.
-        </p>
-
-        {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
+        
+        {/* Error Message */}
+        {error && <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="you@example.com"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -114,11 +91,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Footer */}
         <div className="mt-4 text-sm text-center">
-          <span className="text-gray-600">Don't have an account? </span>
           <Link to="/signup" className="text-blue-600 hover:underline">
-            Sign up
+            Create an account
           </Link>
         </div>
       </div>
