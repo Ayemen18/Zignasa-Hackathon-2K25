@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -29,7 +30,7 @@ export default function SignupPage() {
     try {
       // 1. REAL BACKEND CALL
       // Make sure this URL matches your server port (5001)
-      const res = await axios.post("http://localhost:8080/api/auth/register", {
+      const res = await axios.post(`${API_URL}/api/auth/register`, {
         username,
         email,
         password,

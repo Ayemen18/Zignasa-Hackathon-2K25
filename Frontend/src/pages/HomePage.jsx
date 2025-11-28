@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import React, { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -80,7 +81,7 @@ export default function HomePage() {
       }
 
       // Call AI (Port 8080)
-      const res = await axios.post("http://localhost:8080/api/ai/generate", formData, {
+      const res = await axios.post(`${API_URL}/api/ai/generate`, formData, {
         headers: {
           "x-auth-token": token,
           "Content-Type": "multipart/form-data",
