@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
 
-// 1. Updated Roadmap Schema (Added 'tasks')
 const RoadmapItemSchema = new mongoose.Schema({
   week: Number,
   title: String,
   description: String,
-  tasks: [String],       // <--- NEW: Stores the specific checklist items
+  tasks: [String],
   resources: [String],
   completed: { type: Boolean, default: false }
 });
@@ -18,13 +17,12 @@ const UserSchema = new mongoose.Schema({
   resumeText: { type: String },
   targetRole: { type: String },
 
-  // 2. NEW: Analysis Section (Stores the "Gap Analysis")
-  analysis: {
-    current_level: String,      // e.g., "Intermediate"
-    missing_skills: [String]    // e.g., ["Docker", "GraphQL"]
-  },
+  // --- THE FIX: Use 'Mixed' to accept ANY structure ---
+  analysis: { type: mongoose.Schema.Types.Mixed }, 
 
-  roadmap: [RoadmapItemSchema], 
+  roadmap: [RoadmapItemSchema],
+  completedTasks: { type: [String], default: [] },
+  
   createdAt: { type: Date, default: Date.now }
 });
 

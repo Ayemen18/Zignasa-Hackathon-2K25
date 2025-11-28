@@ -80,4 +80,39 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// @route   PUT /api/auth/update-task
+// @desc    Mark a task as completed/pending
+router.put('/update-task', async (req, res) => {
+  const { userId, weekIndex, taskIndex, completed } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    // Update the specific task's status
+    // Note: This assumes you added 'completed' array or logic to your Schema.
+    // For Hackathon speed, we will use a simple "progress tracking" array in the user object
+    // If your schema is strict, we might just store a list of "completedTaskIds" strings.
+    
+    if (!user.completedTasks) user.completedTasks = [];
+    
+    const taskId = `w${weekIndex}-t${taskIndex}`;
+    
+    if (completed) {
+      // Add if not exists
+      if (!user.completedTasks.includes(taskId)) user.completedTasks.push(taskId);
+    } else {
+      // Remove if exists
+      user.completedTasks = user.completedTasks.filter(id => id !== taskId);
+    }
+
+    await user.save();
+    res.json(user.completedTasks); // Return updated list
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
 module.exports = router;
+

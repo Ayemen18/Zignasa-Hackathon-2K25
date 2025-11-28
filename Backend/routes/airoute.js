@@ -139,4 +139,46 @@ router.post('/chat', auth, async (req, res) => {
     }
 });
 
+router.post('/chat', auth, async (req, res) => {
+    try {
+        const { message } = req.body;
+        const user = await User.findById(req.user.id);
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        if (!user) return res.status(404).json({ msg: "User not found" });
+
+        // --- THE MAGIC: Context Injection ---
+        // We inject the user's resume and gaps into the System Prompt.
+        // The user doesn't see this, but the AI knows it!
+        const systemContext = `
+            You are a specialized Career Mentor for ${user.username}.
+            
+            USER PROFILE:
+            - Target Role: ${user.targetRole}
+            - Current Level: ${user.analysis?.current_level || "Unknown"}
+            - Missing Skills: ${user.analysis?.missing_skills?.join(", ") || "None"}
+            - Resume Summary: ${user.resumeText ? user.resumeText.substring(0, 500) : "Not provided"}...
+            
+            INSTRUCTIONS:
+            - Answer questions specifically based on their roadmap and skill gaps.
+            - If they ask "What should I learn?", refer to their missing skills.
+            - Keep answers short, encouraging, and technical (under 3 sentences if possible).
+        `;
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+                { role: "system", content: systemContext },
+                { role: "user", content: message }
+            ],
+            max_tokens: 150, // Keep responses fast
+        });
+
+        res.json({ reply: completion.choices[0].message.content });
+
+    } catch (err) {
+        console.error("Chat Error:", err);
+        res.status(500).send("Server Error");
+    }
+});
 module.exports = router;
