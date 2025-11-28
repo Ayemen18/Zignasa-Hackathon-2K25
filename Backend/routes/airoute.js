@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const pdfParse = require("pdf-parse");
+const pdfParse = require("pdf-extraction");
+
+console.log("Type of pdfParse:", typeof pdfParse);
+console.log("value of pdfParse:", pdfParse);
 const fs = require("fs");
 const OpenAI = require("openai");
 const auth = require("../middleware/auth"); // Import middleware
