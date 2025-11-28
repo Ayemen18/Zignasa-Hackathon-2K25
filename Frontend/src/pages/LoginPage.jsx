@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -25,7 +26,7 @@ export default function LoginPage() {
 
     try {
       // 1. REAL BACKEND CALL
-      const res = await axios.post("http://localhost:8080/api/auth/login", { 
+      const res = await axios.post(`${API_URL}/api/auth/login`, { 
         email, 
         password 
       });

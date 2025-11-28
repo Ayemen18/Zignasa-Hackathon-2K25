@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuthStore from "../store/authStore";
@@ -56,7 +57,7 @@ export default function DashboardPage() {
             return;
         }
 
-        await axios.put("http://localhost:8080/api/auth/update-task", {
+        await axios.put(`${API_URL}/api/auth/update-task`, {
             userId: userId,
             weekIndex,
             taskIndex,
@@ -86,7 +87,7 @@ export default function DashboardPage() {
     // UPDATED PORT TO 8080
     try {
         const token = localStorage.getItem("token");
-        const res = await axios.post("http://localhost:8080/api/ai/chat", {
+        const res = await axios.post(`${API_URL}/api/ai/chat`, {
             message: newMessage.text
         }, { headers: { "x-auth-token": token } });
 
